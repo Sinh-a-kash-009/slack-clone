@@ -4,10 +4,9 @@ import { connectDB } from "./db.js";
 // Create a client to send and receive events
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "slack-clone" });
-
 const syncUser = inngest.createFunction(
   { id: "sync-user" },
-  { event: "clerk/user.created" },
+  { event: "clerk/user.created" }, // ✅ FIXED
   async ({ event }) => {
     await connectDB();
 
@@ -23,14 +22,15 @@ const syncUser = inngest.createFunction(
     await User.create(newUser);
 
     await upsertStreamUser({
-      id: newUser.clerkId.toString(),
+      id: newUser.clerkId,
       name: newUser.name,
       image: newUser.image,
     });
 
-    await addUserToPublicChannels(newUser.clerkId.toString());
+    await addUserToPublicChannels(newUser.clerkId);
   }
 );
+
 
 const deleteUserFromDB = inngest.createFunction(
   { id: "delete-user-from-db" },
